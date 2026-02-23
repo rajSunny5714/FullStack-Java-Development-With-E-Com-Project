@@ -18,6 +18,17 @@ public class MyGlobalExceptionHandler {
         e.getBindingResult().getAllErrors().forEach(err -> {
             String fieldName = ((FieldError)err).getField();
             String message = err.getDefaultMessage();
+
+            // If NotBlank error exists, prioritize it
+            if (!response.containsKey(fieldName)) {
+                response.put(fieldName, message);
+            }
+            // If blank error already exists, do NOT override it
+            if (response.get(fieldName) != null &&
+                    response.get(fieldName).toLowerCase().contains("blank")) {
+                return;
+            }
+
             response.put(fieldName, message);
         });
         return new ResponseEntity<Map<String, String>>(response, HttpStatus.BAD_REQUEST);
